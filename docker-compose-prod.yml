@@ -1,0 +1,32 @@
+version: "3.11"
+
+services:
+  web:
+    container_name: django
+    build: ./django
+    command: sh -c "python manage.py migrate && gunicorn wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - ./django:/usr/src/app/less1/
+    expose:
+      - 8000
+    depends_on:
+      - db
+  db:
+    container_name: postgresql
+    image: postgres:14.8-alpine
+    env_file:
+      - ./env.db
+    volumes:
+      - pg_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+  nginx:
+    container_name: nginx
+    build: ./nginx
+    ports:
+      - "8092:80"
+    depends_on:
+      - web 
+
+volumes:
+  pg_data:
